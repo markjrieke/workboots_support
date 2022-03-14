@@ -65,4 +65,7 @@ ames_preds_boot <-
 # ----------------------------------save----------------------------------------
 
 ames_preds_boot %>% readr::write_rds("data/ames_preds_boot.rds")
+ames_train %>% readr::write_csv("data/ames_train.csv")
+ames_test %>% readr::write_csv("data/ames_test.csv")
 penguins_preds %>% readr::write_rds("data/penguins_preds.rds")
+
