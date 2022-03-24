@@ -27,7 +27,8 @@ penguins_preds <-
   predict_boots(
     n = 2000,
     training_data = penguins_train,
-    new_data = penguins_test
+    new_data = penguins_test,
+    verbose = TRUE
   )
 
 # ----------------------------ames_preds_boot-----------------------------------
@@ -59,7 +60,8 @@ ames_preds_boot <-
   predict_boots(
     n = 2000,
     training_data = ames_train,
-    new_data = ames_test
+    new_data = ames_test,
+    verbose = TRUE
   )
 
 # ----------------------------------save----------------------------------------
