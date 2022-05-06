@@ -58,6 +58,7 @@ biomass <-
   select(carbon, HHV)
 
 # split into train/test data
+set.seed(918)
 bio_split <- initial_split(biomass)
 bio_train <- training(bio_split)
 bio_test <- testing(bio_split)
