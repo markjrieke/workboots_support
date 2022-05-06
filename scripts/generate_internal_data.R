@@ -48,43 +48,52 @@ penguins_test %>% readr::write_csv("data/penguins_test.csv")
 penguins_pred_int %>% readr::write_rds("data/penguins_pred_int.rds")
 penguins_conf_int %>% readr::write_rds("data/penguins_conf_int.rds")
 
-# ----------------------------ames_preds_boot-----------------------------------
+# ------------------------Estimating-Linear-Intervals---------------------------
 
 # load and setup
-data("ames")
-
-ames_mod <-
-  ames %>%
-  select(First_Flr_SF, Sale_Price) %>%
-  mutate(across(everything(), log10))
+data("biomass")
+biomass <-
+  biomass %>%
+  as_tibble() %>%
+  select(carbon, HHV)
 
 # split into train/test data
-set.seed(918)
-ames_split <- initial_split(ames_mod)
-ames_train <- training(ames_split)
-ames_test <- testing(ames_split)
+bio_split <- initial_split(biomass)
+bio_train <- training(bio_split)
+bio_test <- testing(bio_split)
 
-# setup a workflow with a linear model
-ames_wf <-
+# setup workflow with a linear model
+bio_wf <-
   workflow() %>%
-  add_recipe(recipe(Sale_Price ~ First_Flr_SF, data = ames_train)) %>%
+  add_recipe(recipe(HHV ~ carbon, data = bio_train)) %>%
   add_model(linear_reg())
 
-# generate bootstrap predictions on ames_test
+# generate bootstrap predictions on the test set
 set.seed(713)
-ames_preds_boot <-
-  ames_wf %>%
+bio_pred_int <-
+  bio_wf %>%
   predict_boots(
     n = 2000,
-    training_data = ames_train,
-    new_data = ames_test,
+    training_data = bio_train,
+    new_data = bio_test,
     verbose = TRUE
   )
 
-# ----------------------------------save----------------------------------------
+# generate confidence interval preds on test set
+set.seed(867)
+bio_conf_int <-
+  bio_wf %>%
+  predict_boots(
+    n = 2000,
+    training_data = bio_train,
+    new_data = bio_test,
+    interval = "confidence",
+    verbose = TRUE
+  )
 
-ames_preds_boot %>% readr::write_rds("data/ames_preds_boot.rds")
-ames_train %>% readr::write_csv("data/ames_train.csv")
-ames_test %>% readr::write_csv("data/ames_test.csv")
-
+# save
+bio_train %>% readr::write_csv("data/bio_train.csv")
+bio_test %>% readr::write_csv("data/bio_test.csv")
+bio_pred_int %>% readr::write_rds("data/bio_pred_int.rds")
+bio_conf_int %>% readr::write_rds("data/bio_conf_int.rds")
 
