@@ -51,50 +51,49 @@ penguins_conf_int %>% readr::write_rds("data/penguins_conf_int.rds")
 # ------------------------Estimating-Linear-Intervals---------------------------
 
 # load and setup
-data("biomass")
-biomass <-
-  biomass %>%
-  as_tibble() %>%
-  select(carbon, HHV)
+data("ames")
+ames_mod <-
+  ames %>%
+  select(First_Flr_SF, Sale_Price) %>%
+  mutate(across(everything(), log10))
 
 # split into train/test data
 set.seed(918)
-bio_split <- initial_split(biomass)
-bio_train <- training(bio_split)
-bio_test <- testing(bio_split)
+ames_split <- initial_split(ames_mod)
+ames_train <- training(ames_split)
+ames_test <- testing(ames_split)
 
-# setup workflow with a linear model
-bio_wf <-
+# setup a workflow with a linear model
+ames_wf <-
   workflow() %>%
-  add_recipe(recipe(HHV ~ carbon, data = bio_train)) %>%
+  add_recipe(recipe(Sale_Price ~ First_Flr_SF, data = ames_train)) %>%
   add_model(linear_reg())
 
-# generate bootstrap predictions on the test set
+# generate bootstrap prediction intervals on ames test
 set.seed(713)
-bio_pred_int <-
-  bio_wf %>%
+ames_boot_pred_int <-
+  ames_wf %>%
   predict_boots(
     n = 2000,
-    training_data = bio_train,
-    new_data = bio_test,
+    training_data = ames_train,
+    new_data = ames_test,
     verbose = TRUE
   )
 
-# generate confidence interval preds on test set
+# generate bootstrap confidence intervals on ames test
 set.seed(867)
-bio_conf_int <-
-  bio_wf %>%
+ames_boot_conf_int <-
+  ames_wf %>%
   predict_boots(
     n = 2000,
-    training_data = bio_train,
-    new_data = bio_test,
+    training_data = ames_train,
+    new_data = ames_test,
     interval = "confidence",
     verbose = TRUE
   )
 
 # save
-bio_train %>% readr::write_csv("data/bio_train.csv")
-bio_test %>% readr::write_csv("data/bio_test.csv")
-bio_pred_int %>% readr::write_rds("data/bio_pred_int.rds")
-bio_conf_int %>% readr::write_rds("data/bio_conf_int.rds")
-
+ames_train %>% readr::write_csv("data/ames_train.csv")
+ames_test %>% readr::write_csv("data/ames_test.csv")
+ames_boot_pred_int %>% readr::write_rds("data/ames_boot_pred_int.rds")
+ames_boot_conf_int %>% readr::write_rds("data/ames_boot_conf_int.rds")
